@@ -1,5 +1,5 @@
-from variable import VARIABLES_LIST
-from imports import *
+from utils.variable import VARIABLES_LIST
+from utils.imports import *
 from tools import *
 
 csv_file = upload_dataframe()

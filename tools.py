@@ -1,5 +1,6 @@
-from imports import *
-from variable import REMAKE_FOLDER
+from utils.imports import *
+from utils.variable import REMAKE_FOLDER
+
 def manage_csv(uploaded_file):
     """
     Manage the opening of the CSV file from the temporary file
