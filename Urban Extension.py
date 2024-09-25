@@ -9,22 +9,26 @@ if csv_file:
     map = leafmap.Map()
             
     # Create the dataframe from the uploaded file
-    df = manage_csv(uploaded_file=csv_file)
-    df = df[["LAT", "LON", "LST"]]
+    complete_df = manage_csv(uploaded_file=csv_file)
+    df = complete_df[["LAT", "LON", "LST"]]
     # Create the geometry column from latitude and longitude
-    df['geometry'] = df.apply(lambda row: Point(row['LON'], row['LAT']), axis=1)
+
+    gdf = gpd.GeoDataFrame(
+        df,  # Use the existing DataFrame
+        geometry=gpd.points_from_xy(df["LON"], df["LAT"]),  # Create the geometry from lon/lat
+        crs="EPSG:4326"  # Define the CRS (Coordinate Reference System) as WGS84
+    )
+
     if 'change' not in df.columns:
         df['change'] = False  # Initialize the column
 
     # Convert the DataFrame to a GeoDataFrame
-    gdf = gpd.GeoDataFrame(df, crs="EPSG:4326", geometry='geometry')
-    print(gdf)
-        
+
     st.dataframe(df, height=DATAFRAME_HEIGHT)
     selected_variable = st.selectbox(label="Chose a variable to observe",options=VARIABLES_LIST)
-    if selected_variable != st.session_state.selected_variable:
+    if selected_variable != st.session_state.selected_variable or csv_file != st.session_state.csv_file:
     
-        variable, grid_values, transform, complete_path = create_rasters_needs(df,f'{selected_variable}_remake.tif')
+        variable, grid_values, transform, complete_path = create_rasters_needs(complete_df,f'{selected_variable}_remake.tif')
         save_and_add_raster_to_map(variable, grid_values, transform, complete_path, map)
 
 
@@ -76,6 +80,13 @@ if csv_file:
 
                     # Vérifier les points marqués pour changement
         st.write("i am changing something")
+        
         st.dataframe(df,height=DATAFRAME_HEIGHT)
-        df = df.drop("geometry", axis=1)
-        st.dataframe(df, height=DATAFRAME_HEIGHT)
+        df_final = complete_df.merge(df, how="left")
+        st.dataframe(df_final, height=DATAFRAME_HEIGHT)
+        df_final.loc[df_final['change'] == True, 'LST'] += rd.randint(5,10)
+        st.dataframe(df_final, height=DATAFRAME_HEIGHT)
+        # df_final.drop("change",axis=1)
+        df_final.to_csv("Changed_df.csv")
+
+ 
