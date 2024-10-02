@@ -27,7 +27,7 @@ def upload_dataframe():
     uploaded_file = st.file_uploader("Choose CSV file you want to change", type=["csv"], accept_multiple_files=False)
     return uploaded_file
 
-def create_rasters_needs(df,filename):
+def create_rasters_needs(dataframe,filename):
     """
     Create the necessary components to generate a raster from the dataframe.
     
@@ -42,8 +42,8 @@ def create_rasters_needs(df,filename):
         complete_path (str): Complete file path for the raster to be saved.
     """
     variable = filename.split("_")[0]
-    lat_min, lat_max, lon_min, lon_max = get_min_max(df)
-    grid_values, pixel_size = create_grid(df,variable=variable)
+    lat_min, lat_max, lon_min, lon_max = get_min_max(dataframe)
+    grid_values, pixel_size = create_grid(dataframe,variable=variable)
     transform = from_origin(lon_min, lat_max, pixel_size, pixel_size)
 
     # Check if the remake folder exists, if not, create it
@@ -51,6 +51,9 @@ def create_rasters_needs(df,filename):
         os.makedirs(REMAKE_FOLDER)
     else:
         print(f"Folder already exists: {REMAKE_FOLDER}")
+        shutil.rmtree(REMAKE_FOLDER)
+        os.makedirs(REMAKE_FOLDER)
+       
     complete_path = os.path.join(REMAKE_FOLDER,filename)
 
     return variable, grid_values, transform, complete_path
@@ -78,7 +81,7 @@ def get_min_max(df):
 
 
 
-def create_grid(df, variable):
+def create_grid(dataframe, variable):
     """
     Create a grid of values using latitude and longitude from the dataframe.
     
@@ -90,12 +93,12 @@ def create_grid(df, variable):
         grid_values (np.array): Grid of interpolated values based on LAT, LON, and the variable.
         pixel_size (float): The average pixel size based on latitude differences.
     """ 
-    lat_unique, lon_unique = sorted(df['LAT'].unique()), sorted(df['LON'].unique()) 
+    lat_unique, lon_unique = sorted(dataframe['LAT'].unique()), sorted(dataframe['LON'].unique()) 
     pixel_size = np.mean(pd.DataFrame(lat_unique).diff())
     grid_x, grid_y = np.meshgrid(lon_unique, lat_unique)
 
-    points = df[['LAT', 'LON']].values
-    values = df[variable].values 
+    points = dataframe[['LAT', 'LON']].values
+    values = dataframe[variable].values 
 
     # Make the grid knowing the pixel size
     grid_values = griddata(points, values, (grid_y, grid_x), method='linear')
@@ -119,18 +122,24 @@ def write_raster(path, grid_values, transform):
     """
     min = 0
     max = 0
-    with rasterio.open(path, 'w+', driver='GTiff', height=grid_values.shape[0],
-                width=grid_values.shape[1], count=1, dtype=grid_values.dtype,
-                crs='EPSG:4326', transform=transform) as destination:
+    try:
+        with rasterio.open(path, 'w', driver='GTiff', height=grid_values.shape[0],
+                           width=grid_values.shape[1], count=1, dtype=grid_values.dtype,
+                           crs='EPSG:4326', transform=transform) as destination:
             destination.write(grid_values, 1)
-            print(np.nanmin(grid_values))
             min = np.nanmin(grid_values)
-            print(np.nanmax(grid_values))
             max = np.nanmax(grid_values)
-    st.success("TIF file done")
+            print(type(destination))
+            print(f"Raster written successfully: {path}")
+    except Exception as e:
+        print(f"Error while writing raster: {e}")
+    finally:
+        print(f"File closed: {path}")
+
+    st.success("TIF file creation complete")
     return min, max
 
-def save_and_add_raster_to_map(variable, grid_values, transform, complete_path, map):
+def save_and_add_raster_to_map(variable, grid_values, transform, complete_path, map:leafmap.Map):
     """
     Save the grid values to a raster file and add the raster to the map.
     
@@ -149,5 +158,4 @@ def save_and_add_raster_to_map(variable, grid_values, transform, complete_path, 
         map.add_raster(complete_path, indexes=1, colormap='jet_r', layer_name=variable, opacity=1, vmin=min, vmax=max)  
     else:
         map.add_raster(complete_path, indexes=1, colormap='jet', layer_name=variable, opacity=1, vmin=min, vmax=max)  
-
     return map
