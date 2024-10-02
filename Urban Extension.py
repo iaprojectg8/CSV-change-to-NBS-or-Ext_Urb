@@ -33,14 +33,14 @@ if csv_file:
         df = complete_df[["LON", "LAT", f"{selected_variable}", "change"]]
 
         gdf = gpd.GeoDataFrame(
-            df,  # Use the existing DataFrame
-            geometry=gpd.points_from_xy(df["LON"], df["LAT"]),  # Create the geometry from lon/lat
-            crs="EPSG:4326"  # Define the CRS (Coordinate Reference System) as WGS84
+            df,  
+            geometry=gpd.points_from_xy(df["LON"], df["LAT"]),  
+            crs="EPSG:4326" 
         )
 
         st.button("Variable that will change", on_click=callback_change_variable)
         if st.session_state.change_variable:
-            occsol, zone_cli, min_hauta, max_hauta = tuning_variables_value()
+            occsol, zone_cli, min_hauta, max_hauta = tuning_variables_value_urb()
 
             st.button("Transform dataframe", on_click=callback_transform)
             if st.session_state.transform_dataframe:
@@ -63,8 +63,7 @@ if csv_file:
                             # Change all the indices in the dataframe
                             for index in points_within.index:
                                 df.at[index, 'change'] = True
-                        # Vérifier les points marqués pour changement
-                print(df)
+                    
                 st.write("Dataframe with change column")
                 st.dataframe(df,height=DATAFRAME_HEIGHT)
                 

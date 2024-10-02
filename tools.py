@@ -174,7 +174,7 @@ def build_the_raster(map, complete_df, selected_variable):
     return map
 
 
-def tuning_variables_value():
+def tuning_variables_value_urb():
     activated = not st.toggle("Authorize user to change values",value=False)
          
     occsol =  st.number_input("OCCSOL", min_value=0, max_value=6, value=6, disabled=activated)
@@ -190,6 +190,20 @@ def tuning_variables_value():
     # Natsol deactivated
     # natsol = st.number_input("NATSOL", min_value=0, max_value=11, value=6, disabled=activated)
     # natsol2 = st.number_input("NATSOL2", min_value=0, max_value=11, value=6, disabled=activated)
+
+    return occsol, zone_cli, min_hauta, max_hauta
+
+def tuning_variables_value_nbs():
+    activated = not st.toggle("Authorize user to change values",value=False)
+    occsol =  st.number_input("OCCSOL", min_value=0, max_value=6, value=1, disabled=activated)
+    zone_cli = st.number_input("ZONECL", min_value=11, max_value=17, value = 11, disabled=activated)
+    st.write("Random interval for HAUTA")
+    col1, col2 = st.columns(2)
+
+    with col1:
+        min_hauta = st.number_input("HAUTA min", min_value=5, max_value=45, value = 5, disabled=activated)
+    with col2:
+        max_hauta = st.number_input("HAUTA max",min_value=min_hauta, max_value=50, value = min_hauta + 5, disabled=activated)
 
     return occsol, zone_cli, min_hauta, max_hauta
 
