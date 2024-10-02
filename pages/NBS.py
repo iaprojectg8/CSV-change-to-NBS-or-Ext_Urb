@@ -50,18 +50,19 @@ if csv_file:
         if st.session_state.change_variable:
             activated = not st.toggle("Authorize user to change values",value=False)
          
-            occsol =  st.number_input("OCCSOL", min_value=0, max_value=6, value=6, disabled=activated)
-            zone_cli = st.number_input("ZONECL", min_value=0, max_value=16, value = 6, disabled=activated)
+            occsol =  st.number_input("OCCSOL", min_value=0, max_value=6, value=1, disabled=activated)
+            zone_cli = st.number_input("ZONECL", min_value=11, max_value=17, value = 11, disabled=activated)
             st.write("Random interval for HAUTA",)
             col1, col2 = st.columns(2)
     
             with col1:
-                min_hauta = st.number_input("HAUTA min", min_value=0, max_value=20, value = 0, disabled=activated)
+                min_hauta = st.number_input("HAUTA min", min_value=5, max_value=45, value = 5, disabled=activated)
             with col2:
-                max_hauta = st.number_input("HAUTA max",min_value=min_hauta, max_value=20, value = min_hauta + 5, disabled=activated)
+                max_hauta = st.number_input("HAUTA max",min_value=min_hauta, max_value=50, value = min_hauta + 5, disabled=activated)
 
-            natsol = st.number_input("NATSOL", min_value=0, max_value=11, value=6, disabled=activated)
-            natsol2 = st.number_input("NATSOL2", min_value=0, max_value=11, value=6, disabled=activated)
+            # Deactivated for the moment
+            # natsol = st.number_input("NATSOL", min_value=0, max_value=11, value=6, disabled=activated)
+            # natsol2 = st.number_input("NATSOL2", min_value=0, max_value=11, value=6, disabled=activated)
             
 
 
@@ -106,8 +107,10 @@ if csv_file:
                 # Changes applied on the dataframe
                 df_final.loc[df_final["change"], "OCCSOL"] = occsol
                 df_final.loc[df_final["change"], "ZONECL"] = zone_cli
-                df_final.loc[df_final["change"], "NATSOL"] = natsol
-                df_final.loc[df_final["change"], "NATSOL2"] = natsol2
+
+                # Same here as before, all the layer corresponding to the natsol are deactivated for the moment
+                # df_final.loc[df_final["change"], "NATSOL"] = natsol
+                # df_final.loc[df_final["change"], "NATSOL2"] = natsol2
 
                 possible_value = np.arange(min_hauta, max_hauta)
                 associated_proba = [1/4**(i+1) for i, value in enumerate(possible_value)]

@@ -159,3 +159,53 @@ def save_and_add_raster_to_map(variable, grid_values, transform, complete_path, 
     else:
         map.add_raster(complete_path, indexes=1, colormap='jet', layer_name=variable, opacity=1, vmin=min, vmax=max)  
     return map
+
+
+def build_the_raster(map, complete_df, selected_variable):
+    with st.status("Creating the corresponding raster...", expanded=True):
+        st.write("Gathering raster needs...")
+        variable, grid_values, transform, complete_path = create_rasters_needs(complete_df,f'{selected_variable}_remake.tif')
+        st.write("Writing and saving raster...")
+        map = save_and_add_raster_to_map(variable, grid_values, transform, complete_path, map)
+        st.session_state.selected_variable = selected_variable
+        st.session_state.map = map
+        # Afficher la carte dans Streamlit
+
+    return map
+
+
+def tuning_variables_value():
+    activated = not st.toggle("Authorize user to change values",value=False)
+         
+    occsol =  st.number_input("OCCSOL", min_value=0, max_value=6, value=6, disabled=activated)
+    zone_cli = st.number_input("ZONECL", min_value=0, max_value=16, value = 6, disabled=activated)
+    st.write("Random interval for HAUTA")
+
+    col1, col2 = st.columns(2)
+    with col1:
+        min_hauta = st.number_input("HAUTA min", min_value=0, max_value=20, value = 0, disabled=activated)
+    with col2:
+        max_hauta = st.number_input("HAUTA max",min_value=min_hauta, max_value=20, value = min_hauta + 5, disabled=activated)
+
+    # Natsol deactivated
+    # natsol = st.number_input("NATSOL", min_value=0, max_value=11, value=6, disabled=activated)
+    # natsol2 = st.number_input("NATSOL2", min_value=0, max_value=11, value=6, disabled=activated)
+
+    return occsol, zone_cli, min_hauta, max_hauta
+
+
+def make_probs_for_tree_distrib(min_hauta, max_hauta):
+    possible_value = np.arange(min_hauta, max_hauta)
+    associated_proba = [1/4**(i+1) for i, value in enumerate(possible_value)]
+    total = sum(associated_proba)
+    normalized_proba = [p / total for p in associated_proba]
+
+    return normalized_proba, possible_value 
+
+
+def value_attribution(df_final, occsol, zone_cli, possible_value, normalized_proba):
+    df_final.loc[df_final["change"], "OCCSOL"] = occsol
+    df_final.loc[df_final["change"], "ZONECL"] = zone_cli
+    df_final.loc[df_final["change"], "HAUTA"] = df_final.loc[df_final["change"]].apply(lambda x: np.random.choice(a=possible_value, p=normalized_proba), axis=1)
+
+    return df_final
