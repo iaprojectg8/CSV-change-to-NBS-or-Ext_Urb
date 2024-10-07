@@ -162,6 +162,17 @@ def save_and_add_raster_to_map(variable, grid_values, transform, complete_path, 
 
 
 def build_the_raster(map, complete_df, selected_variable):
+    """
+    Builds and adds a raster to a given map based on the selected variable from a DataFrame.
+
+    Args:
+        map (leafmap): The map object where the raster will be added .
+        complete_df (pd.DataFrame): The DataFrame containing the data used to create the raster.
+        selected_variable (str): The name of the variable in the DataFrame to use for raster creation.
+
+    Returns:
+        map: The updated map with the newly created raster layer.
+    """
     with st.status("Creating the corresponding raster...", expanded=True):
         st.write("Gathering raster needs...")
         variable, grid_values, transform, complete_path = create_rasters_needs(complete_df,f'{selected_variable}_remake.tif')
@@ -169,14 +180,22 @@ def build_the_raster(map, complete_df, selected_variable):
         map = save_and_add_raster_to_map(variable, grid_values, transform, complete_path, map)
         st.session_state.selected_variable = selected_variable
         st.session_state.map = map
-        # Afficher la carte dans Streamlit
 
     return map
 
 
 def tuning_variables_value_urb():
+    """
+    This function displays a user interface using Streamlit widgets to allow the user to set and tune
+    certain variables like OCCSOL and ZONECL to the right value for an urban extension.
+    The user has the option to disable inputs, depending on the toggle state.
+    Returns:
+        occsol (int): The value selected for OCCSOL (Occupancy solution).
+        zone_cli (int): The value selected for ZONECL (Climate zone).
+        min_hauta (int): The minimum value for the HAUTA interval.
+        max_hauta (int): The maximum value for the HAUTA interval.
+    """
     activated = not st.toggle("Authorize user to change values",value=False)
-         
     occsol =  st.number_input("OCCSOL", min_value=0, max_value=6, value=6, disabled=activated)
     zone_cli = st.number_input("ZONECL", min_value=0, max_value=16, value = 6, disabled=activated)
     st.write("Random interval for HAUTA")
@@ -187,19 +206,26 @@ def tuning_variables_value_urb():
     with col2:
         max_hauta = st.number_input("HAUTA max",min_value=min_hauta, max_value=20, value = min_hauta + 5, disabled=activated)
 
-    # Natsol deactivated
-    # natsol = st.number_input("NATSOL", min_value=0, max_value=11, value=6, disabled=activated)
-    # natsol2 = st.number_input("NATSOL2", min_value=0, max_value=11, value=6, disabled=activated)
-
     return occsol, zone_cli, min_hauta, max_hauta
 
 def tuning_variables_value_nbs():
+    """
+    This function displays a user interface using Streamlit widgets to allow the user to set and tune
+    certain variables like OCCSOL and ZONECL to the right value for NBS.
+    The user has the option to disable inputs, depending on the toggle state.
+    Returns:
+        occsol (int): The value selected for OCCSOL (Occupancy solution).
+        zone_cli (int): The value selected for ZONECL (Climate zone).
+        min_hauta (int): The minimum value for the HAUTA interval.
+        max_hauta (int): The maximum value for the HAUTA interval.
+    """
+
     activated = not st.toggle("Authorize user to change values",value=False)
     occsol =  st.number_input("OCCSOL", min_value=0, max_value=6, value=1, disabled=activated)
     zone_cli = st.number_input("ZONECL", min_value=11, max_value=17, value = 11, disabled=activated)
     st.write("Random interval for HAUTA")
-    col1, col2 = st.columns(2)
 
+    col1, col2 = st.columns(2)
     with col1:
         min_hauta = st.number_input("HAUTA min", min_value=5, max_value=45, value = 5, disabled=activated)
     with col2:
@@ -209,8 +235,24 @@ def tuning_variables_value_nbs():
 
 
 def make_probs_for_tree_distrib(min_hauta, max_hauta):
+    """
+    Generates a probability distribution over a range of values based on a decaying exponential pattern.
+    
+    The function creates a list of possible values between `min_hauta` and `max_hauta` (exclusive of `max_hauta`),
+    and assigns probabilities to each value that decrease exponentially as the values increase.
+    The probabilities are then normalized to sum to 1.
+    
+    Args:
+        min_hauta (int): The minimum value for the distribution.
+        max_hauta (int): The maximum value (exclusive) for the distribution.
+    
+    Returns:
+        normalized_proba (list of float): A list of normalized probabilities for each value.
+        possible_value (numpy.ndarray): An array of possible values in the range [min_hauta, max_hauta).
+    """
+
     possible_value = np.arange(min_hauta, max_hauta)
-    associated_proba = [1/4**(i+1) for i, value in enumerate(possible_value)]
+    associated_proba = [1/2**(i+1) for i, value in enumerate(possible_value)]
     total = sum(associated_proba)
     normalized_proba = [p / total for p in associated_proba]
 
@@ -218,6 +260,24 @@ def make_probs_for_tree_distrib(min_hauta, max_hauta):
 
 
 def value_attribution(df_final, occsol, zone_cli, possible_value, normalized_proba):
+    """
+    Assigns specific values to the columns "OCCSOL", "ZONECL", and "HAUTA" in a given DataFrame
+    where a condition is met (where the 'change' column is True).
+
+    - "OCCSOL" and "ZONECL" columns are assigned fixed values (`occsol` and `zone_cli`).
+    - "HAUTA" is assigned a value randomly chosen from the `possible_value` list based on the 
+      given probability distribution `normalized_proba`.
+
+    Args:
+        df_final (pd.DataFrame): The DataFrame where values will be updated.
+        occsol (int): The value to assign to the "OCCSOL" column for rows where 'change' is True.
+        zone_cli (int): The value to assign to the "ZONECL" column for rows where 'change' is True.
+        possible_value (array-like): List or array of possible values for the "HAUTA" column.
+        normalized_proba (list of float): List of probabilities corresponding to each value in `possible_value`.
+    
+    Returns:
+        pd.DataFrame: The updated DataFrame with the assigned values.
+    """
     df_final.loc[df_final["change"], "OCCSOL"] = occsol
     df_final.loc[df_final["change"], "ZONECL"] = zone_cli
     df_final.loc[df_final["change"], "HAUTA"] = df_final.loc[df_final["change"]].apply(lambda x: np.random.choice(a=possible_value, p=normalized_proba), axis=1)

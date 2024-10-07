@@ -1,7 +1,7 @@
 from utils.variable import VARIABLES_LIST, DATAFRAME_HEIGHT, CSV_PATH
 from utils.imports import *
-from tools import *
-from session_variables import *
+from lib.tools import *
+from lib.session_variables import *
 
 csv_file = upload_dataframe()
 
