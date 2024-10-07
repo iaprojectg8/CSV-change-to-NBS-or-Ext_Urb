@@ -1,7 +1,12 @@
-from utils.variable import VARIABLES_LIST, DATAFRAME_HEIGHT, CSV_PATH
+from utils.variables import VARIABLES_LIST, DATAFRAME_HEIGHT, CSV_PATH, G8_LOGO_PATH
 from utils.imports import *
 from lib.tools import *
 from lib.session_variables import *
+from lib.logo_sytle import put_logo_if_possible, increase_logo
+
+put_logo_if_possible()
+st.logo(G8_LOGO_PATH)
+increase_logo()
 
 csv_file = upload_dataframe()
 
@@ -84,7 +89,3 @@ if csv_file:
                 df_final.to_csv(CSV_PATH,index=False)
                 st.success(f"Finale CSV saved to {CSV_PATH}")
                
-    if st.button("Reset everything"):
-        print(st.session_state)
-        st.session_state.clear()
-        st.rerun()

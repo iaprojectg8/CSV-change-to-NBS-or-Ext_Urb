@@ -1,4 +1,4 @@
-from utils.variable import VARIABLES_LIST, DATAFRAME_HEIGHT, CSV_PATH
+from utils.variables import VARIABLES_LIST, DATAFRAME_HEIGHT, CSV_PATH
 from utils.imports import *
 from lib.tools import *
 from lib.session_variables import *
@@ -83,8 +83,3 @@ if csv_file:
                 st.dataframe(df_final, height=DATAFRAME_HEIGHT)
                 df_final.to_csv(CSV_PATH,index=False)
                 st.success(f"Finale CSV saved to {CSV_PATH}")
-               
-    if st.button("Reset everything"):
-        print(st.session_state)
-        st.session_state.clear()
-        st.rerun()

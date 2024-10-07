@@ -2,3 +2,5 @@ VARIABLES_LIST = ["LST","LAT", "LON", "LS1","LS2","LS3","LS4","LS5","LS6","OCCSO
 REMAKE_FOLDER = "Remaked rasters"
 DATAFRAME_HEIGHT = 200
 CSV_PATH = "CSV/Changed_df.csv"
+G8_LOGO_PATH = "logo/Logo_G8.png"
+KERAN_LOGO_PATH = "logo/Logo_Keran.png"

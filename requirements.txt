@@ -1,0 +1,10 @@
+gdal
+pyproj
+streamlit
+leafmap
+scikit-learn
+scipy
+rasterio
+pandas
+xarray
+localtileserver

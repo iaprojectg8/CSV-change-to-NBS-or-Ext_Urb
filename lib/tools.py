@@ -1,5 +1,5 @@
 from utils.imports import *
-from utils.variable import REMAKE_FOLDER
+from utils.variables import REMAKE_FOLDER
 
 def manage_csv(uploaded_file):
     """
@@ -227,9 +227,9 @@ def tuning_variables_value_nbs():
 
     col1, col2 = st.columns(2)
     with col1:
-        min_hauta = st.number_input("HAUTA min", min_value=5, max_value=45, value = 5, disabled=activated)
+        min_hauta = st.number_input("HAUTA min", min_value=5, max_value=45, value = 20, disabled=activated)
     with col2:
-        max_hauta = st.number_input("HAUTA max",min_value=min_hauta, max_value=50, value = min_hauta + 5, disabled=activated)
+        max_hauta = st.number_input("HAUTA max",min_value=min_hauta, max_value=50, value = min_hauta + 10, disabled=activated)
 
     return occsol, zone_cli, min_hauta, max_hauta
 
