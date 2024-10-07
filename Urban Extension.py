@@ -47,8 +47,8 @@ if csv_file:
         if st.session_state.change_variable:
             occsol, zone_cli, min_hauta, max_hauta = tuning_variables_value_urb()
 
-            st.button("Transform dataframe", on_click=callback_transform)
-            if st.session_state.transform_dataframe:
+            st.button("Transform dataframe", on_click=callback_transform_ext)
+            if st.session_state.transform_dataframe_ext:
                 for drawn_polygon in drawn_polygons:
 
                     if "geometry" in drawn_polygon:

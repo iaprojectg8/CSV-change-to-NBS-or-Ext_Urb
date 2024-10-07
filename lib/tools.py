@@ -175,7 +175,8 @@ def build_the_raster(map, complete_df, selected_variable):
     """
     with st.status("Creating the corresponding raster...", expanded=True):
         st.write("Gathering raster needs...")
-        variable, grid_values, transform, complete_path = create_rasters_needs(complete_df,f'{selected_variable}_remake.tif')
+        # The random process at the end of the name allow the user to see the   
+        variable, grid_values, transform, complete_path = create_rasters_needs(complete_df,f'{selected_variable}_remake{rd.randint(0, 100)}.tif')
         st.write("Writing and saving raster...")
         map = save_and_add_raster_to_map(variable, grid_values, transform, complete_path, map)
         st.session_state.selected_variable = selected_variable

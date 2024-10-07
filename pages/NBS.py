@@ -1,9 +1,16 @@
-from utils.variables import VARIABLES_LIST, DATAFRAME_HEIGHT, CSV_PATH
+from utils.variables import VARIABLES_LIST, DATAFRAME_HEIGHT, CSV_PATH, G8_LOGO_PATH
 from utils.imports import *
 from lib.tools import *
 from lib.session_variables import *
+from lib.logo_sytle import put_logo_if_possible, increase_logo
+
+put_logo_if_possible()
+st.logo(G8_LOGO_PATH)
+increase_logo()
 
 csv_file = upload_dataframe()
+# Reinitialize the urban extension variable
+st.session_state.transform_dataframe_ext = 0
 
 if csv_file:
     # Create the dataframe from the uploaded file
@@ -42,8 +49,8 @@ if csv_file:
         if st.session_state.change_variable:
             occsol, zone_cli, min_hauta, max_hauta = tuning_variables_value_nbs()
 
-            st.button("Transform dataframe", on_click=callback_transform)
-            if st.session_state.transform_dataframe:
+            st.button("Transform dataframe", on_click=callback_transform_nbs)
+            if st.session_state.transform_dataframe_nbs:
                 for drawn_polygon in drawn_polygons:
 
                     if "geometry" in drawn_polygon:
