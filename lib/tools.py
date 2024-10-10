@@ -9,7 +9,7 @@ def manage_csv(uploaded_file):
     Returns:
         df (pd.Dataframe) : dataframe containing all the variables
     """
-    with tempfile.NamedTemporaryFile(delete=False, suffix=".csv") as temp_file:
+    with tempfile.NamedTemporaryFile(delete=True, suffix=".csv") as temp_file:
         temp_file.write(uploaded_file.read())
         temp_file_path = temp_file.name
     df = pd.read_csv(temp_file_path)
